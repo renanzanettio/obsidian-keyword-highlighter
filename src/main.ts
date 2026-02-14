@@ -1,38 +1,32 @@
-import { Plugin, Notice } from 'obsidian';
-import { StudyAnalyzer } from './core/studyAnalyzer';
+import { Plugin, Notice, MarkdownView } from 'obsidian';
+import { StudyAnalyzer } from './analyzer/StudyAnalyzer';
+import { HighlightWorkflow } from './workflow/HighlightWorkflow';
 
 
 
 
-export default class KeywordHighlighterPlugin extends Plugin {
+export default class AutomaticHighlighter extends Plugin {
 
     private analyzer = new StudyAnalyzer();
 
+    private executeWorkflow() {
+
+        const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+        if (!view) return;
+
+        const editor = view.editor;
+        if (!editor) return;
+
+        const workflow = new HighlightWorkflow(this.app);
+        workflow.run(editor);
+    }
+
+
     private registerAnalyzeCommand() {
         this.addCommand({
-            id: 'analyze-note',
-            name: 'Analyze Note for Important Content',
-            callback: async () => {
-
-                const activeFile = this.app.workspace.getActiveFile();
-
-                if (!activeFile) {
-                    new Notice('No active file found!');
-                    return;
-                }
-
-                const content = await this.app.vault.read(activeFile);
-
-                const highlights = this.analyzer.analyze(content);
-
-                if (highlights.length === 0) {
-                    new Notice('No important content detected.');
-                    return;
-                }
-
-                console.log('Detected highlights:', highlights);
-                new Notice(`Detected ${highlights.length} important sections.`);
-            }
+            id: "analyze-and-highlight",
+            name: "Analyze and Suggest Highlights",
+            callback: () => this.executeWorkflow()
         });
     }
 

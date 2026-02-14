@@ -1,0 +1,23 @@
+.ah-modal {
+    padding: 10px 5px;
+}
+
+.ah-modal h2 {
+    margin-bottom: 8px;
+}
+
+.ah-modal p {
+    margin: 6px 0;
+    color: var(--text-muted);
+}
+
+.ah-modal-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.ah-modal-buttons button {
+    min-width: 110px;
+}

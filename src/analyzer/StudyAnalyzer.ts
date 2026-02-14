@@ -1,5 +1,4 @@
 export type HighlightType =
-    | "title"
     | "definition"
     | "purpose"
     | "principle"
@@ -8,7 +7,7 @@ export type HighlightType =
     | "important"
     | "example"
     | "conclusion"
-    | "warning"
+    | "warning";
 
 export interface HighlightCandidate {
     text: string;
@@ -27,85 +26,77 @@ export class StudyAnalyzer {
 
         for (const line of lines) {
 
+            const lowerLine = line.toLowerCase();
+
             let detectedType: HighlightType | null = null;
             let start = offset;
             let end = offset + line.length;
 
-            // PRIORIDADE 1 - TITLE
-            if (line.startsWith("### ")) {
-                detectedType = "title";
-            }
-
-            // PRIORIDADE 2 - PRINCIPLE
-            else if (/^\d+\./.test(line.trim())) {
-                detectedType = "principle";
-            }
-
             // PRIORIDADE 3 - DEFINITION (PT + EN)
-            else if (
-                line.includes(" é ") ||
-                line.includes(" is ") ||
-                line.includes(" refere-se a ") ||
-                line.includes(" is defined as ") ||
-                line.includes(" consiste em ") ||
-                line.includes(" consists of ")
+            if (
+                lowerLine.includes(" é ") ||
+                lowerLine.includes(" is ") ||
+                lowerLine.includes(" refere-se a ") ||
+                lowerLine.includes(" is defined as ") ||
+                lowerLine.includes(" consiste em ") ||
+                lowerLine.includes(" consists of ")
             ) {
                 detectedType = "definition";
             }
 
             // PRIORIDADE 4 - PURPOSE (PT + EN)
             else if (
-                line.includes("visa") ||
-                line.includes("serve para") ||
-                line.includes("tem como objetivo") ||
-                line.includes("permite") ||
-                line.includes("allows") ||
-                line.includes("enables") ||
-                line.includes("aims to") ||
-                line.includes("is used to")
+                lowerLine.includes("visa") ||
+                lowerLine.includes("serve para") ||
+                lowerLine.includes("tem como objetivo") ||
+                lowerLine.includes("permite") ||
+                lowerLine.includes("allows") ||
+                lowerLine.includes("enables") ||
+                lowerLine.includes("aims to") ||
+                lowerLine.includes("is used to")
             ) {
                 detectedType = "purpose";
             }
 
             // PRIORIDADE 5 - EXAMPLE
             else if (
-                line.includes("por exemplo") ||
-                line.includes("for example") ||
-                line.includes("for instance") ||
-                line.includes("e.g.")
+                lowerLine.includes("por exemplo") ||
+                lowerLine.includes("for example") ||
+                lowerLine.includes("for instance") ||
+                lowerLine.includes("e.g.")
             ) {
                 detectedType = "example";
             }
 
             // PRIORIDADE 6 - COMPARISON
             else if (
-                line.includes("diferente de") ||
-                line.includes("similar to") ||
-                line.includes("in contrast") ||
-                line.includes("por outro lado") ||
-                line.includes("on the other hand")
+                lowerLine.includes("diferente de") ||
+                lowerLine.includes("similar to") ||
+                lowerLine.includes("in contrast") ||
+                lowerLine.includes("por outro lado") ||
+                lowerLine.includes("on the other hand")
             ) {
                 detectedType = "comparison";
             }
 
             // PRIORIDADE 7 - IMPORTANT
             else if (
-                line.includes("importante") ||
-                line.includes("fundamental") ||
-                line.includes("essential") ||
-                line.includes("crucial") ||
-                line.includes("key")
+                lowerLine.includes("importante") ||
+                lowerLine.includes("fundamental") ||
+                lowerLine.includes("essential") ||
+                lowerLine.includes("crucial") ||
+                lowerLine.includes("key")
             ) {
                 detectedType = "important";
             }
 
             // PRIORIDADE 8 - CONCLUSION
             else if (
-                line.includes("em resumo") ||
-                line.includes("portanto") ||
-                line.includes("therefore") ||
-                line.includes("in summary") ||
-                line.includes("thus")
+                lowerLine.includes("em resumo") ||
+                lowerLine.includes("portanto") ||
+                lowerLine.includes("therefore") ||
+                lowerLine.includes("in summary") ||
+                lowerLine.includes("thus")
             ) {
                 detectedType = "conclusion";
             }

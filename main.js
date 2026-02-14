@@ -20,29 +20,34 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 // src/main.ts
 var main_exports = {};
 __export(main_exports, {
-  default: () => KeywordHighlighterPlugin
+  default: () => AutomaticHighlighter
 });
 module.exports = __toCommonJS(main_exports);
-var import_obsidian = require("obsidian");
+var import_obsidian2 = require("obsidian");
 
-// src/core/studyAnalyzer.ts
+// src/analyzer/StudyAnalyzer.ts
 var StudyAnalyzer = class {
   analyze(content) {
     const results = [];
     const lines = content.split("\n");
     let offset = 0;
     for (const line of lines) {
+      const lowerLine = line.toLowerCase();
       let detectedType = null;
       let start = offset;
       let end = offset + line.length;
-      if (line.startsWith("### ")) {
-        detectedType = "title";
-      } else if (/^\d+\./.test(line.trim())) {
-        detectedType = "principle";
-      } else if (line.includes(" \xE9 ")) {
+      if (lowerLine.includes(" \xE9 ") || lowerLine.includes(" is ") || lowerLine.includes(" refere-se a ") || lowerLine.includes(" is defined as ") || lowerLine.includes(" consiste em ") || lowerLine.includes(" consists of ")) {
         detectedType = "definition";
-      } else if (line.includes("visa") || line.includes("serve para") || line.includes("tem como objetivo")) {
+      } else if (lowerLine.includes("visa") || lowerLine.includes("serve para") || lowerLine.includes("tem como objetivo") || lowerLine.includes("permite") || lowerLine.includes("allows") || lowerLine.includes("enables") || lowerLine.includes("aims to") || lowerLine.includes("is used to")) {
         detectedType = "purpose";
+      } else if (lowerLine.includes("por exemplo") || lowerLine.includes("for example") || lowerLine.includes("for instance") || lowerLine.includes("e.g.")) {
+        detectedType = "example";
+      } else if (lowerLine.includes("diferente de") || lowerLine.includes("similar to") || lowerLine.includes("in contrast") || lowerLine.includes("por outro lado") || lowerLine.includes("on the other hand")) {
+        detectedType = "comparison";
+      } else if (lowerLine.includes("importante") || lowerLine.includes("fundamental") || lowerLine.includes("essential") || lowerLine.includes("crucial") || lowerLine.includes("key")) {
+        detectedType = "important";
+      } else if (lowerLine.includes("em resumo") || lowerLine.includes("portanto") || lowerLine.includes("therefore") || lowerLine.includes("in summary") || lowerLine.includes("thus")) {
+        detectedType = "conclusion";
       }
       if (detectedType) {
         results.push({
@@ -68,31 +73,117 @@ var StudyAnalyzer = class {
   }
 };
 
+// src/modal/ConfirmHighlightModal.ts
+var import_obsidian = require("obsidian");
+var ConfirmHighlightModal = class extends import_obsidian.Modal {
+  constructor(app, highlightCount, onConfirm, onCancel) {
+    super(app);
+    this.highlightCount = highlightCount;
+    this.onConfirm = onConfirm;
+    this.onCancel = onCancel;
+  }
+  onOpen() {
+    const { contentEl } = this;
+    contentEl.addClass("ah-modal");
+    contentEl.createEl("h2", {
+      text: "Highlights Applied"
+    });
+    contentEl.createEl("p", {
+      text: `${this.highlightCount} highlights were added to this note.`
+    });
+    contentEl.createEl("p", {
+      text: "Would you like to keep the changes?"
+    });
+    const buttonContainer = contentEl.createDiv({
+      cls: "ah-modal-buttons"
+    });
+    const keepBtn = buttonContainer.createEl("button", {
+      text: "Keep Changes",
+      cls: "mod-cta"
+    });
+    keepBtn.onclick = () => {
+      this.onConfirm();
+      this.close();
+    };
+    const revertBtn = buttonContainer.createEl("button", {
+      text: "Revert"
+    });
+    revertBtn.onclick = () => {
+      this.onCancel();
+      this.close();
+    };
+  }
+  onClose() {
+    this.contentEl.empty();
+  }
+};
+
+// src/applier/HighlightApplier.ts
+var HighlightApplier = class {
+  apply(editor, candidates) {
+    const content = editor.getValue();
+    const lines = content.split("\n");
+    const updatedLines = lines.map((line) => {
+      const match = candidates.find((c) => c.text === line);
+      if (!match || match.type === "acronym") return line;
+      if (line.startsWith("==") && line.endsWith("==")) {
+        return line;
+      }
+      const prefixMatch = line.match(/^(\s*(\d+\.\s|- |\> |#{1,6}\s))/);
+      if (prefixMatch) {
+        const prefix = prefixMatch[0];
+        const rest = line.slice(prefix.length);
+        return `${prefix}==${rest}==`;
+      }
+      return `==${line}==`;
+    });
+    editor.setValue(updatedLines.join("\n"));
+  }
+};
+
+// src/workflow/HighlightWorkflow.ts
+var HighlightWorkflow = class {
+  constructor(app) {
+    this.app = app;
+    this.analyzer = new StudyAnalyzer();
+    this.applier = new HighlightApplier();
+  }
+  run(editor) {
+    const originalContent = editor.getValue();
+    const candidates = this.analyzer.analyze(originalContent);
+    if (candidates.length === 0) return;
+    this.applier.apply(editor, candidates);
+    new ConfirmHighlightModal(
+      this.app,
+      candidates.length,
+      () => {
+      },
+      () => {
+        editor.setValue(originalContent);
+      }
+    ).open();
+  }
+};
+
 // src/main.ts
-var KeywordHighlighterPlugin = class extends import_obsidian.Plugin {
+var AutomaticHighlighter = class extends import_obsidian2.Plugin {
   constructor() {
     super(...arguments);
     this.analyzer = new StudyAnalyzer();
   }
+  executeWorkflow() {
+    const view = this.app.workspace.getActiveViewOfType(import_obsidian2.MarkdownView);
+    if (!view) return;
+    const editor = view.editor;
+    if (!editor) return;
+    const workflow = new HighlightWorkflow(this.app);
+    workflow.run(editor);
+  }
   registerAnalyzeCommand() {
     this.addCommand({
-      id: "analyze-note",
-      name: "Analyze Note for Important Content",
-      callback: async () => {
-        const activeFile = this.app.workspace.getActiveFile();
-        if (!activeFile) {
-          new import_obsidian.Notice("No active file found!");
-          return;
-        }
-        const content = await this.app.vault.read(activeFile);
-        const highlights = this.analyzer.analyze(content);
-        if (highlights.length === 0) {
-          new import_obsidian.Notice("No important content detected.");
-          return;
-        }
-        console.log("Detected highlights:", highlights);
-        new import_obsidian.Notice(`Detected ${highlights.length} important sections.`);
-      }
+      id: "analyze-and-highlight",
+      name: "Analyze and Suggest Highlights",
+      callback: () => this.executeWorkflow()
     });
   }
   registerNotificationCommand() {
@@ -100,7 +191,7 @@ var KeywordHighlighterPlugin = class extends import_obsidian.Plugin {
       id: "show-notification",
       name: "Show Notification",
       callback: () => {
-        new import_obsidian.Notice("This is a notification from the Keyword Highlighter Plugin!");
+        new import_obsidian2.Notice("This is a notification from the Keyword Highlighter Plugin!");
       }
     });
   }
@@ -112,7 +203,7 @@ var KeywordHighlighterPlugin = class extends import_obsidian.Plugin {
         const id = this.manifest.id;
         await this.app.plugins.disablePlugin(id);
         await this.app.plugins.enablePlugin(id);
-        new import_obsidian.Notice("Keyword Highlighter plugin reloaded!");
+        new import_obsidian2.Notice("Keyword Highlighter plugin reloaded!");
       }
     });
   }
