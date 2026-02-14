@@ -1,9 +1,9 @@
 {
-  "id": "keyword-highlighter",
-  "name": "Keyword Highlighter",
+  "id": "obsidian-keyword-highlighter",
+  "name": "Obsidian Keyword Highlighter",
   "version": "0.0.1",
   "minAppVersion": "0.15.0",
-  "description": "Destaca palavras-chave automaticamente no texto.",
+  "description": "Automatically extract and highlight meaningful keywords from your notes using a frequency-independent algorithm, with preview and save control.",
   "author": "Renan Zanetti",
   "isDesktopOnly": false
 }

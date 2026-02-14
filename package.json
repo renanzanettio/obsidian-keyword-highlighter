@@ -4,7 +4,8 @@
   "description": "Automatically extract and highlight meaningful keywords from your notes using a frequency-independent algorithm, with preview and save control.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc"
   },
   "repository": {
     "type": "git",
