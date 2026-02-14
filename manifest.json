@@ -1,0 +1,9 @@
+{
+  "id": "keyword-highlighter",
+  "name": "Keyword Highlighter",
+  "version": "0.0.1",
+  "minAppVersion": "0.15.0",
+  "description": "Destaca palavras-chave automaticamente no texto.",
+  "author": "Renan Zanetti",
+  "isDesktopOnly": false
+}
