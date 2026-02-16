@@ -109,6 +109,18 @@ Crit\xE9rios de classifica\xE7\xE3o:
 Extraia apenas trechos que tenham significado completo.
 Ignore frases triviais, conectivos e repeti\xE7\xF5es.
 
+Regras obrigat\xF3rias adicionais:
+
+- O trecho N\xC3O pode ultrapassar 180 caracteres.
+- O trecho N\xC3O pode ultrapassar 25 palavras.
+- N\xC3O extraia frases completas longas.
+- Extraia apenas o n\xFAcleo conceitual da ideia.
+- Se uma frase for longa, selecione apenas a parte essencial que carrega o significado principal.
+- N\xC3O marque linhas inteiras ou par\xE1grafos completos.
+- O objetivo \xE9 criar destaques r\xE1pidos que permitam revis\xE3o sem precisar reler o texto inteiro.
+
+O trecho deve parecer um highlight feito manualmente com marca-texto.
+
 Texto:
 """
 ${noteContent}
@@ -140,7 +152,38 @@ var HighlightWorkflow = class {
     const sorted = highlights.sort((a, b) => b.start - a.start);
     let text = editor.getValue();
     sorted.forEach((h) => {
-      text = text.slice(0, h.start) + `==${h.text}==` + text.slice(h.end);
+      switch (h.type) {
+        case "definition":
+          text = `${text.slice(0, h.start)}<mark style="background-color: #FFF59DB3">${h.text}</mark>${text.slice(h.end)}`;
+          break;
+        case "principle":
+          text = `${text.slice(0, h.start)}<mark style="background-color: #E1BEE7B3">${h.text}</mark>${text.slice(h.end)}`;
+          break;
+        case "concept":
+          text = `${text.slice(0, h.start)}<mark style="background-color: #BBDEFBB3">${h.text}</mark>${text.slice(h.end)}`;
+          break;
+        case "guideline":
+          text = `${text.slice(0, h.start)}<mark style="background-color: #FFE0B2B3">${h.text}</mark>${text.slice(h.end)}`;
+          break;
+        case "practice":
+          text = `${text.slice(0, h.start)}<mark style="background-color: #C8E6C9B3">${h.text}</mark>${text.slice(h.end)}`;
+          break;
+        case "value":
+          text = `${text.slice(0, h.start)}<mark style="background-color: #F8BBD0B3">${h.text}</mark>${text.slice(h.end)}`;
+          break;
+        case "metric":
+          text = `${text.slice(0, h.start)}<mark style="background-color: #B2EBF2B3">${h.text}</mark>${text.slice(h.end)}`;
+          break;
+        case "warning":
+          text = `${text.slice(0, h.start)}<mark style="background-color: #FFCDD2B3">${h.text}</mark>${text.slice(h.end)}`;
+          break;
+        case "classification":
+          text = `${text.slice(0, h.start)}<mark style="background-color: #DCEDC8B3">${h.text}</mark>${text.slice(h.end)}`;
+          break;
+        default:
+          console.warn(`Tipo desconhecido: ${h.type}`);
+          break;
+      }
     });
     editor.setValue(text);
   }

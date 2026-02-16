@@ -64,6 +64,18 @@ Critérios de classificação:
 Extraia apenas trechos que tenham significado completo.
 Ignore frases triviais, conectivos e repetições.
 
+Regras obrigatórias adicionais:
+
+- O trecho NÃO pode ultrapassar 180 caracteres.
+- O trecho NÃO pode ultrapassar 25 palavras.
+- NÃO extraia frases completas longas.
+- Extraia apenas o núcleo conceitual da ideia.
+- Se uma frase for longa, selecione apenas a parte essencial que carrega o significado principal.
+- NÃO marque linhas inteiras ou parágrafos completos.
+- O objetivo é criar destaques rápidos que permitam revisão sem precisar reler o texto inteiro.
+
+O trecho deve parecer um highlight feito manualmente com marca-texto.
+
 Texto:
 """
 ${noteContent}
